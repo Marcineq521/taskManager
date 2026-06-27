@@ -1,6 +1,7 @@
 package task.manager.controller;
 
 import org.springframework.web.bind.annotation.*;
+import task.manager.dto.TaskResponse;
 import task.manager.model.Task;
 import task.manager.repository.TaskRepository;
 import task.manager.user.User;
@@ -26,8 +27,17 @@ public class AdminController {
     }
 
     @GetMapping("/tasks")
-    public List<Task> getAllTasks(){
-        return taskRepository.findAll();
+    public List<TaskResponse> getAllTasks(){
+        return taskRepository.findAll()
+                .stream()
+                .map(task->new TaskResponse(
+                        task.getId(),
+                        task.getContent(),
+                        task.isCompleted(),
+                        task.getOwner().getUsername()
+                ))
+                .toList();
+
     }
 
     @DeleteMapping("/tasks/{id}")
