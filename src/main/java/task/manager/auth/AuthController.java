@@ -2,11 +2,9 @@ package task.manager.auth;
 
 
 import io.jsonwebtoken.Jwt;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import task.manager.user.User;
 import task.manager.auth.JwtService;
 import task.manager.user.UserRepository;
@@ -35,6 +33,7 @@ public class AuthController {
              throw new RuntimeException("Username already exists");
          }
 
+         user.setRole("USER");
          userRepository.save(user);
          return "User created";
      }
@@ -51,4 +50,17 @@ public class AuthController {
         String token= jwtService.generateToken(user.getUsername());
         return new LoginResponse(token);
      }
+
+    @GetMapping("/me")
+    public MeResponse me() {
+        String username = SecurityContextHolder
+                .getContext()
+                .getAuthentication()
+                .getName();
+
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        return new MeResponse(user.getUsername(), user.getRole());
+    }
 }
